@@ -22,13 +22,19 @@ func GetTasks(userID primitive.ObjectID) ([]domain.Task, error) {
 
 	collection, err := getTaskCollection()
 	if err != nil {
-		return []domain.Task{}, err
+		return nil, err
+	}
+
+	filter := bson.M{"user_id": userID}
+
+	cursor, err := collection.Find(context.Background(), filter)
+	if err != nil {
+		return nil, err
 	}
 
 	var tasks []domain.Task
-	err = collection.FindOne(context.Background(), bson.M{"user_id": userID}).Decode(&tasks)
-	if err != nil {
-		return []domain.Task{}, err
+	if err := cursor.All(context.Background(), &tasks); err != nil {
+		return nil, err
 	}
 
 	return tasks, nil
@@ -44,7 +50,12 @@ func GetTaskByID(taskID primitive.ObjectID, userID primitive.ObjectID) (domain.T
 	var task domain.Task
 	err = collection.FindOne(context.Background(), bson.M{"_id": taskID, "user_id": userID}).Decode(&task)
 	if err != nil {
-		return domain.Task{}, err
+		if err == mongo.ErrNoDocuments {
+			return domain.Task{}, errors.New("Task not found")
+		}
+
+		return domain.Task{}, errors.New("Server error")
+
 	}
 
 	return task, nil

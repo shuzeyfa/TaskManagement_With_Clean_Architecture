@@ -81,7 +81,7 @@ func GetAllTask(c *gin.Context) {
 
 	tasks, err := usecase.GetAllTask(userId)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "could not fetch tasks"})
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
 

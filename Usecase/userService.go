@@ -56,7 +56,7 @@ func LoginUser(req domain.LoginRequest) (string, error) {
 
 	tokenString, err := infrastructure.GenerateJWT(user, req)
 	if err != nil {
-		return "", err
+		return "", errors.New(err.Error())
 	}
 
 	return tokenString, nil
